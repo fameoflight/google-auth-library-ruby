@@ -114,8 +114,8 @@ module Google
       # @param [String] callback_uri
       #  URL (either absolute or relative) of the auth callback. Defaults
       #  to '/oauth2callback'
-      def initialize(client_id, scope, token_store, callback_uri = nil)
-        super(client_id, scope, token_store, callback_uri)
+      def initialize(client_id, scope, token_store, options = {})
+        super(client_id, scope, token_store, options)
       end
 
       # Handle the result of the oauth callback. Exchanges the authorization

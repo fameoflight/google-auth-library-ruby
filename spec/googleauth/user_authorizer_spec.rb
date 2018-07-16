@@ -48,7 +48,7 @@ describe Google::Auth::UserAuthorizer do
     Google::Auth::UserAuthorizer.new(client_id,
                                      scope,
                                      token_store,
-                                     callback_uri)
+                                     callback_uri: callback_uri)
   end
 
   shared_examples 'valid authorization url' do

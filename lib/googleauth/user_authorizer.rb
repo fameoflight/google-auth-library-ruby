@@ -72,14 +72,18 @@ module Google
       # @param [String] callback_uri
       #  URL (either absolute or relative) of the auth callback.
       #  Defaults to '/oauth2callback'
-      def initialize(client_id, scope, token_store, callback_uri = nil)
+      def initialize(client_id, scope, token_store, options = {})
         raise NIL_CLIENT_ID_ERROR if client_id.nil?
         raise NIL_SCOPE_ERROR if scope.nil?
 
         @client_id = client_id
         @scope = Array(scope)
         @token_store = token_store
-        @callback_uri = callback_uri || '/oauth2callback'
+        @callback_uri = options[:callback_uri] || '/oauth2callback'
+
+        @token_credential_uri = options[:token_credential_uri]
+        @authorization_uri = options[:authorization_uri]
+        @revoke_uri = options[:revoke_uri]
       end
 
       # Build the URL for requesting authorization.
@@ -102,7 +106,10 @@ module Google
         credentials = UserRefreshCredentials.new(
           client_id: @client_id.id,
           client_secret: @client_id.secret,
-          scope: scope
+          scope: scope,
+          token_credential_uri: @token_credential_uri,
+          authorization_uri: @authorization_uri,
+          revoke_uri: @revoke_uri
         )
         redirect_uri = redirect_uri_for(options[:base_url])
         url = credentials.authorization_uri(access_type: 'offline',
@@ -137,6 +144,9 @@ module Google
           client_id: @client_id.id,
           client_secret: @client_id.secret,
           scope: data['scope'] || @scope,
+          token_credential_uri: @token_credential_uri,
+          authorization_uri: @authorization_uri,
+          revoke_uri: @revoke_uri,
           access_token: data['access_token'],
           refresh_token: data['refresh_token'],
           expires_at: data.fetch('expiration_time_millis', 0) / 1000
@@ -172,7 +182,10 @@ module Google
           client_id: @client_id.id,
           client_secret: @client_id.secret,
           redirect_uri: redirect_uri_for(base_url),
-          scope: scope
+          scope: scope,
+          token_credential_uri: @token_credential_uri,
+          authorization_uri: @authorization_uri,
+          revoke_uri: @revoke_uri
         )
         credentials.code = code
         credentials.fetch_access_token!({})

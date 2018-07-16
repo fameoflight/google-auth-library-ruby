@@ -64,11 +64,15 @@ module Google
           'refresh_token' => ENV[CredentialsLoader::REFRESH_TOKEN_VAR]
         }
 
-        new(token_credential_uri: TOKEN_CRED_URI,
-            client_id: user_creds['client_id'],
-            client_secret: user_creds['client_secret'],
-            refresh_token: user_creds['refresh_token'],
-            scope: scope)
+        new(
+          client_id: user_creds['client_id'],
+          client_secret: user_creds['client_secret'],
+          refresh_token: user_creds['refresh_token'],
+          scope: scope,
+          token_credential_uri: options[:token_credential_uri],
+          authorization_uri: options[:authorization_uri],
+          revoke_uri: options[:revoke_uri]
+        )
       end
 
       # Reads the client_id, client_secret and refresh_token fields from the
@@ -86,6 +90,8 @@ module Google
         options ||= {}
         options[:token_credential_uri] ||= TOKEN_CRED_URI
         options[:authorization_uri] ||= AUTHORIZATION_URI
+        @revoke_uri = options[:revoke_uri] || REVOKE_TOKEN_URI
+
         super(options)
       end
 
@@ -94,7 +100,7 @@ module Google
         c = options[:connection] || Faraday.default_connection
 
         retry_with_error do
-          resp = c.get(REVOKE_TOKEN_URI, token: refresh_token || access_token)
+          resp = c.get(@revoke_uri, token: refresh_token || access_token)
           case resp.status
           when 200
             self.access_token = nil
